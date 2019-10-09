@@ -1,26 +1,38 @@
 #include <iostream>
 #include <curl/curl.h>
+#include "json/json.h"
 
 using namespace std;
 
-void get_ip_info(string);
+int get_ip_info(string);
+
+string response;
+
+static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    ((string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
 
 int main(int argc, char *argv[]) {
-    get_ip_info("");
+    int res = get_ip_info("");
+	cout << response;
     return 0;
 }
 
-void get_ip_info(string ip_addr) {
+int get_ip_info(string ip_addr) {
 	CURL *curl;
 	CURLcode res;
+	string url = "https://freegeoip.app/json/"  + ip_addr;
 
 	curl = curl_easy_init();
-    string url = "http://whatismyip.akamai.com/";
 
-	if (curl) {
-		curl_easy_setopt(curl, CURLOPT_URL, url);
+	if(curl) {
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 		res = curl_easy_perform(curl);
-        cout << res << endl;
 		curl_easy_cleanup(curl);
-    }
+	}
+	return res;
 }
