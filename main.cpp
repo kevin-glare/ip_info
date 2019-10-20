@@ -1,12 +1,13 @@
 #include <iostream>
+#include <regex>
 #include <curl/curl.h>
-#include "json/json.h"
 
 using namespace std;
 
-void get_ip_info(string);
-void parsing_json(string);
+void get_ip_info(string ip_addr);
+void show_result();
 
+const string sorry = "Sorry, something went wrong...";
 string response;
 
 static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
@@ -21,8 +22,14 @@ int main(int argc, char *argv[]) {
 		ip = argv[1];
 
     get_ip_info(ip);
-	parsing_json(response);
-	cout << response;
+
+	if (response.empty()) {
+		cout << sorry << endl;
+	} else {
+		show_result();
+
+	}
+
     return 0;
 }
 
@@ -42,4 +49,10 @@ void get_ip_info(string ip_addr) {
 	}
 }
 
-void parsing_json(string response) {}
+void show_result() {
+	response.insert(1, "\n\t");
+	response.insert(response.length()-2, "\n");
+	response = regex_replace(response, regex(R"(\,)"), ",\n\t");
+	response = regex_replace(response, regex(R"(\:)"), ": ");
+	cout << response << endl;
+}
